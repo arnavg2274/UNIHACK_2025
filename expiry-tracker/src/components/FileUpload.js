@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -17,6 +17,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { keyframes } from '@emotion/react';
 import { motion } from 'framer-motion';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
 // Custom animations
 const pulseAnimation = keyframes`
@@ -53,6 +54,11 @@ const FileUpload = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [dragActive, setDragActive] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const cameraInputRef = useRef(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   // Colors
   const darkBg = '#1e2233';
@@ -166,6 +172,94 @@ const FileUpload = () => {
     setPreview(null);
     setMessage({ type: '', text: '' });
   };
+
+  const handleCameraCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Use the same code you already have for processing uploaded files
+      setFile(file);
+      setPreview(URL.createObjectURL(file));
+      setUploadComplete(false);
+      setMessage({ type: '', text: '' });
+    }
+  };
+
+  // Function to open camera
+  const openCamera = async () => {
+    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Use back camera
+      });
+      
+      // Store stream for cleanup
+      streamRef.current = stream;
+      
+      // Connect stream to video element
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setMessage({ type: 'error', text: 'Camera access failed. Please try uploading a file instead.' });
+      setIsCameraOpen(false);
+      
+      // Fallback to file input if camera fails
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      }
+    }
+  };
+
+  // Function to capture photo from camera
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw video frame to canvas
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Convert canvas to file
+      canvas.toBlob((blob) => {
+        const file = new File([blob], "receipt-photo.jpg", { type: "image/jpeg" });
+        
+        // Use existing file handling code
+        setFile(file);
+        setPreview(URL.createObjectURL(file));
+        setUploadComplete(false);
+        setMessage({ type: '', text: '' });
+        
+        // Close camera
+        closeCamera();
+      }, 'image/jpeg', 0.95);
+    }
+  };
+
+  // Function to close camera
+  const closeCamera = () => {
+    setIsCameraOpen(false);
+    
+    // Stop all tracks in the stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  // Clean up camera stream when component unmounts
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   return (
     <Box 
@@ -435,16 +529,33 @@ const FileUpload = () => {
         }}
       >
         <Button
-          variant="outlined"
-          fullWidth
-          startIcon={<PhotoCameraIcon />}
-          onClick={() => document.getElementById('receipt-upload').click()}
+          variant="contained"
+          color="secondary"
+          startIcon={<CameraAltIcon />}
+          onClick={() => {
+            // Try advanced camera first, fallback to simple input
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              openCamera();
+            } else if (cameraInputRef.current) {
+              cameraInputRef.current.click();
+            }
+          }}
+          component={motion.button}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           sx={{
-            borderColor: 'rgba(255,255,255,0.1)',
-            color: textPrimary,
+            width: '40%',
+            bgcolor: secondaryGreen,
+            color: cardBg,
+            fontWeight: 500,
             textTransform: 'none',
             borderRadius: 2,
-            py: 1
+            py: 1,
+            boxShadow: '0 2px 8px rgba(74,234,188,0.2)',
+            '&:hover': {
+              bgcolor: '#5ff1ce',
+              boxShadow: '0 4px 12px rgba(74,234,188,0.3)',
+            }
           }}
         >
           Take Photo
@@ -460,11 +571,13 @@ const FileUpload = () => {
           whileHover={!loading && file ? { scale: 1.03 } : {}}
           whileTap={!loading && file ? { scale: 0.97 } : {}}
           sx={{
+            width: '60%',
             bgcolor: primaryPurple,
             color: textPrimary,
             textTransform: 'none',
             borderRadius: 2,
             py: 1,
+            fontWeight: 500,
             '&:hover': {
               bgcolor: '#8672ff'
             },
@@ -678,6 +791,67 @@ const FileUpload = () => {
           </Typography>
         </Box>
       </Box>
+      
+      {/* Camera capture fallback for mobile */}
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        id="camera-capture"
+        style={{ display: 'none' }}
+        onChange={handleCameraCapture}
+        ref={cameraInputRef}
+      />
+      
+      {/* Camera UI */}
+      {isCameraOpen && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'background.paper',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: 2
+          }}
+        >
+          <Box sx={{ flex: 1, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8 }}
+            />
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={closeCamera}
+              sx={{ flex: 1, maxWidth: 150 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={capturePhoto}
+              sx={{ flex: 1, maxWidth: 150 }}
+            >
+              Capture
+            </Button>
+          </Box>
+          
+          {/* Hidden canvas for image processing */}
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+        </Box>
+      )}
     </Box>
   );
 };
