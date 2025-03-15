@@ -9,15 +9,32 @@ import {
   Fade,
   Zoom,
   IconButton,
-  Divider
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Stack
 } from '@mui/material';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import { keyframes } from '@emotion/react';
 import { motion } from 'framer-motion';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import WarningIcon from '@mui/icons-material/Warning';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import CategoryIcon from '@mui/icons-material/Category';
+import ocrService from '../services/ocr';
 
 // Custom animations
 const pulseAnimation = keyframes`
@@ -54,6 +71,10 @@ const FileUpload = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [dragActive, setDragActive] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const [processedResults, setProcessedResults] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [editedValues, setEditedValues] = useState({});
   const cameraInputRef = useRef(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const videoRef = useRef(null);
@@ -68,6 +89,20 @@ const FileUpload = () => {
   const accentOrange = '#ff9757';
   const textPrimary = '#ffffff';
   const textSecondary = 'rgba(255, 255, 255, 0.6)';
+
+  // Food category options for dropdown
+  const categoryOptions = [
+    'Dairy', 
+    'Meat', 
+    'Produce', 
+    'Bakery', 
+    'Eggs', 
+    'Seafood', 
+    'Frozen', 
+    'Packaged',
+    'Pantry',
+    'Other'
+  ];
 
   // Reset success state after 5 seconds
   useEffect(() => {
@@ -107,20 +142,30 @@ const FileUpload = () => {
 
     setLoading(true);
     setMessage({ type: '', text: '' });
+    setProcessedResults(null); // Clear previous results
 
     try {
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 2200));
+      // Use the OCR service to process the receipt
+      const result = await ocrService.processReceipt(file);
       
-      // This is where you would call the OCR service and process the receipt
-      console.log('Processing file:', file.name);
+      console.log('OCR result:', result);
       
-      setMessage({ 
-        type: 'success', 
-        text: 'Receipt processed! 6 items identified with expiry dates.' 
-      });
-      setUploadComplete(true);
+      if (result && result.items && result.items.length > 0) {
+        setMessage({ 
+          type: 'success', 
+          text: `Receipt processed! ${result.items.length} items identified.` 
+        });
+        setUploadComplete(true);
+        setProcessedResults(result);
+        setShowResults(true); // Automatically show results
+      } else {
+        setMessage({ 
+          type: 'warning', 
+          text: 'Receipt processed but no items were detected. Try a clearer image.' 
+        });
+      }
     } catch (error) {
+      console.error('Error processing receipt:', error);
       setMessage({ 
         type: 'error', 
         text: 'Error processing receipt: ' + (error.message || 'Unknown error') 
@@ -260,6 +305,200 @@ const FileUpload = () => {
       }
     };
   }, []);
+
+  // Function to handle view results button click
+  const toggleResults = () => {
+    if (processedResults) {
+      setShowResults(prev => !prev);
+    } else if (uploadComplete) {
+      setMessage({ 
+        type: 'error', 
+        text: 'No results available. Please process the receipt again.' 
+      });
+    }
+  };
+
+  // Add this utility function inside your component
+  const getExpiryColor = (expiryDays) => {
+    if (!expiryDays && expiryDays !== 0) return textSecondary;
+    const daysNum = parseInt(expiryDays, 10);
+    if (isNaN(daysNum)) return textSecondary;
+    
+    if (daysNum <= 3) return '#ff5656'; // Red for soon expiring
+    if (daysNum <= 7) return accentOrange; // Orange for medium term
+    return secondaryGreen; // Green for long shelf life
+  };
+
+  const getExpiryText = (expiryDays, expiryDate) => {
+    if ((!expiryDays && expiryDays !== 0) || !expiryDate) return 'Unknown expiry';
+    const daysNum = parseInt(expiryDays, 10);
+    if (isNaN(daysNum)) return 'Unknown expiry';
+    
+    let text = `${daysNum} days`;
+    if (expiryDate) {
+      const formattedDate = new Date(expiryDate).toLocaleDateString();
+      text += ` (${formattedDate})`;
+    }
+    
+    if (daysNum <= 0) {
+      return `Expired: ${text}`;
+    } else if (daysNum <= 3) {
+      return `Expires soon: ${text}`;
+    } else if (daysNum <= 7) {
+      return `Use within: ${text}`;
+    } else {
+      return `Expires in: ${text}`;
+    }
+  };
+
+  // New function to start editing an item
+  const startEditing = (index) => {
+    setEditingItem(index);
+    // Copy the current values to edit
+    setEditedValues({...processedResults.items[index]});
+  };
+
+  // New function to save edited item
+  const saveEditedItem = (index) => {
+    if (processedResults && processedResults.items) {
+      // Create a deep copy of processedResults
+      const updatedResults = {
+        ...processedResults,
+        items: [...processedResults.items]
+      };
+      
+      // Replace the item with edited values
+      updatedResults.items[index] = {...editedValues};
+      
+      // Update the results
+      setProcessedResults(updatedResults);
+      setEditingItem(null);
+      setEditedValues({});
+      
+      setMessage({
+        type: 'success',
+        text: 'Item updated successfully!'
+      });
+    }
+  };
+
+  // New function to cancel editing
+  const cancelEditing = () => {
+    setEditingItem(null);
+    setEditedValues({});
+  };
+
+  // Handle changes to edited values
+  const handleEditChange = (field, value) => {
+    setEditedValues(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Calculate expiry date when expiryDays changes
+  useEffect(() => {
+    if (editingItem !== null && editedValues.expiryDays !== undefined) {
+      // Calculate new expiry date based on expiryDays
+      const purchaseDate = processedResults.date ? new Date(processedResults.date) : new Date();
+      const expiryDate = new Date(purchaseDate);
+      expiryDate.setDate(expiryDate.getDate() + parseInt(editedValues.expiryDays, 10));
+      
+      setEditedValues(prev => ({
+        ...prev,
+        expiryDate: expiryDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+      }));
+    }
+  }, [editedValues.expiryDays, editingItem, processedResults?.date]);
+
+  // Replace the handleExpiryDateChange function with a simpler version that works with regular inputs
+  const handleExpiryDateChange = (event) => {
+    if (editingItem !== null && event.target.value && processedResults.date) {
+      const newExpiryDate = new Date(event.target.value);
+      const purchaseDate = new Date(processedResults.date);
+      
+      // Calculate days between purchase date and new expiry date
+      const diffTime = Math.abs(newExpiryDate - purchaseDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      setEditedValues(prev => ({
+        ...prev,
+        expiryDays: diffDays,
+        expiryDate: event.target.value // Format already in YYYY-MM-DD
+      }));
+    }
+  };
+
+  // Add an item manually
+  const addManualItem = () => {
+    if (!processedResults) {
+      setProcessedResults({
+        store: "Manual Entry",
+        date: new Date(),
+        items: []
+      });
+    }
+    
+    const newItem = {
+      name: "New Item",
+      category: "Other",
+      quantity: null,
+      price: null,
+      expiryDays: 7,
+      expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+    
+    const updatedResults = {
+      ...processedResults,
+      items: [...(processedResults.items || []), newItem]
+    };
+    
+    setProcessedResults(updatedResults);
+    startEditing(updatedResults.items.length - 1);
+  };
+
+  // Delete an item
+  const deleteItem = (index) => {
+    if (processedResults && processedResults.items) {
+      const updatedResults = {
+        ...processedResults,
+        items: processedResults.items.filter((_, i) => i !== index)
+      };
+      
+      setProcessedResults(updatedResults);
+      setMessage({
+        type: 'info',
+        text: 'Item removed'
+      });
+    }
+  };
+
+  // Add this function to recalculate expiry dates when purchase date changes
+  const recalculateExpiryDates = (newPurchaseDate) => {
+    if (!processedResults || !processedResults.items) return;
+    
+    const updatedResults = {
+      ...processedResults,
+      date: newPurchaseDate,
+      items: processedResults.items.map(item => {
+        if (item.expiryDays) {
+          const newExpiryDate = new Date(newPurchaseDate);
+          newExpiryDate.setDate(newExpiryDate.getDate() + parseInt(item.expiryDays, 10));
+          return {
+            ...item,
+            expiryDate: newExpiryDate.toISOString().split('T')[0]
+          };
+        }
+        return item;
+      })
+    };
+    
+    setProcessedResults(updatedResults);
+    setMessage({
+      type: 'info',
+      text: 'Purchase date updated. All expiry dates recalculated.'
+    });
+  };
 
   return (
     <Box 
@@ -565,11 +804,11 @@ const FileUpload = () => {
           variant="contained"
           color="primary"
           fullWidth
-          disabled={loading || !file}
-          onClick={handleUpload}
+          disabled={loading || (!file && !uploadComplete)}
+          onClick={uploadComplete ? toggleResults : handleUpload}
           component={motion.button}
-          whileHover={!loading && file ? { scale: 1.03 } : {}}
-          whileTap={!loading && file ? { scale: 0.97 } : {}}
+          whileHover={!loading && (file || uploadComplete) ? { scale: 1.03 } : {}}
+          whileTap={!loading && (file || uploadComplete) ? { scale: 0.97 } : {}}
           sx={{
             width: '60%',
             bgcolor: primaryPurple,
@@ -598,7 +837,7 @@ const FileUpload = () => {
               Scanning...
             </Box>
           ) : uploadComplete ? (
-            'View Results'
+            showResults ? 'Hide Results' : 'View Results'
           ) : (
             'Process Receipt'
           )}
@@ -670,14 +909,20 @@ const FileUpload = () => {
               borderRadius: 2,
               bgcolor: message.type === 'success' 
                 ? 'rgba(74, 234, 188, 0.1)' 
-                : 'rgba(255, 86, 86, 0.1)',
+                : message.type === 'warning' 
+                  ? 'rgba(255, 255, 0, 0.1)' 
+                  : 'rgba(255, 86, 86, 0.1)',
               color: message.type === 'success' 
                 ? secondaryGreen 
-                : '#ff5656',
+                : message.type === 'warning' 
+                  ? accentOrange 
+                  : '#ff5656',
               border: '1px solid',
               borderColor: message.type === 'success' 
                 ? 'rgba(74, 234, 188, 0.2)' 
-                : 'rgba(255, 86, 86, 0.2)',
+                : message.type === 'warning' 
+                  ? 'rgba(255, 255, 0, 0.2)' 
+                  : 'rgba(255, 86, 86, 0.2)',
             }}
           >
             {message.text}
@@ -850,6 +1095,649 @@ const FileUpload = () => {
           
           {/* Hidden canvas for image processing */}
           <canvas ref={canvasRef} style={{ display: 'none' }} />
+        </Box>
+      )}
+      
+      {/* RESULTS DISPLAY SECTION */}
+      {showResults && processedResults && (
+        <Box 
+          component={motion.div}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          sx={{ 
+            mt: 3, 
+            p: 2, 
+            bgcolor: cardBg,
+            borderRadius: 3,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            maxHeight: '500px',
+            overflow: 'auto'
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: textPrimary, 
+              fontSize: '1rem', 
+              mb: 2, 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ReceiptLongIcon sx={{ mr: 1, fontSize: '1.2rem', color: primaryPurple }} />
+              <span>Processing Results</span>
+            </Box>
+            <Box>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddShoppingCartIcon />}
+                onClick={addManualItem}
+                sx={{ 
+                  mr: 1,
+                  borderColor: secondaryGreen,
+                  color: secondaryGreen,
+                  textTransform: 'none',
+                  fontSize: '0.7rem'
+                }}
+              >
+                Add Item
+              </Button>
+              <IconButton 
+                size="small" 
+                onClick={() => setShowResults(false)}
+                sx={{ color: textSecondary }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Typography>
+          
+          {/* Receipt Information with Edit Options */}
+          <Box sx={{ mb: 2 }}>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ color: primaryPurple, mb: 1 }}
+            >
+              Receipt Information:
+            </Typography>
+            
+            <Grid container spacing={2} sx={{ mb: 1 }}>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <AddShoppingCartIcon sx={{ fontSize: '0.9rem', mr: 0.5, color: textSecondary }} />
+                  <Typography variant="body2" sx={{ color: textSecondary }}>
+                    Store: {processedResults.store || 'Unknown Store'}
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CalendarTodayIcon sx={{ fontSize: '0.9rem', mr: 0.5, color: textSecondary }} />
+                    <Typography variant="body2" sx={{ color: textSecondary, mr: 1 }}>
+                      Purchase Date:
+                    </Typography>
+                  </Box>
+                  
+                  {/* Editable purchase date */}
+                  <TextField
+                    type="date"
+                    size="small"
+                    value={processedResults.date ? new Date(processedResults.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      // Update the purchase date
+                      const newDate = new Date(e.target.value);
+                      const updatedResults = {
+                        ...processedResults,
+                        date: newDate
+                      };
+                      
+                      // Recalculate all expiry dates based on new purchase date
+                      if (updatedResults.items && updatedResults.items.length > 0) {
+                        updatedResults.items = updatedResults.items.map(item => {
+                          if (item.expiryDays) {
+                            const newExpiryDate = new Date(newDate);
+                            newExpiryDate.setDate(newExpiryDate.getDate() + parseInt(item.expiryDays, 10));
+                            return {
+                              ...item,
+                              expiryDate: newExpiryDate.toISOString().split('T')[0]
+                            };
+                          }
+                          return item;
+                        });
+                      }
+                      
+                      setProcessedResults(updatedResults);
+                      setMessage({
+                        type: 'info',
+                        text: 'Purchase date updated. All expiry dates recalculated.'
+                      });
+                    }}
+                    InputProps={{
+                      sx: { 
+                        color: textPrimary,
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: primaryPurple },
+                        fontSize: '0.8rem',
+                      }
+                    }}
+                    sx={{ maxWidth: '150px' }}
+                  />
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+          
+          <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)', my: 1.5 }} />
+          
+          <Typography 
+            variant="subtitle2" 
+            sx={{ color: primaryPurple, mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <span>Items with Expiry Estimates:</span>
+          </Typography>
+          
+          {processedResults.items && processedResults.items.length > 0 ? (
+            <List sx={{ p: 0 }}>
+              {processedResults.items.map((item, index) => (
+                <React.Fragment key={index}>
+                  {editingItem === index ? (
+                    // Editing mode
+                    <ListItem
+                      sx={{
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        px: 2,
+                        py: 2,
+                        bgcolor: 'rgba(0,0,0,0.2)',
+                        borderRadius: 2,
+                        mb: 2,
+                      }}
+                    >
+                      <Typography variant="subtitle2" sx={{ color: primaryPurple, mb: 2 }}>
+                        Edit Item
+                      </Typography>
+                      
+                      <Grid container spacing={2} sx={{ width: '100%' }}>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Item Name"
+                            value={editedValues.name || ''}
+                            onChange={(e) => handleEditChange('name', e.target.value)}
+                            fullWidth
+                            size="small"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                color: textPrimary,
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                '&:hover fieldset': { borderColor: primaryPurple },
+                              },
+                              '& .MuiInputLabel-root': { color: textSecondary },
+                            }}
+                          />
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel sx={{ color: textSecondary }}>Item Type</InputLabel>
+                            <Select
+                              value={editedValues.isPerishable === false ? "non-perishable" : "perishable"}
+                              onChange={(e) => {
+                                if (e.target.value === "non-perishable") {
+                                  setEditedValues(prev => ({
+                                    ...prev,
+                                    isPerishable: false,
+                                    expiryDays: null,
+                                    expiryDate: null
+                                  }));
+                                } else {
+                                  // If changing from non-perishable to perishable, setup default expiry
+                                  const purchaseDate = processedResults.date ? new Date(processedResults.date) : new Date();
+                                  const expiryDate = new Date(purchaseDate);
+                                  expiryDate.setDate(expiryDate.getDate() + 7); // Default 7 days
+                                  
+                                  setEditedValues(prev => ({
+                                    ...prev,
+                                    isPerishable: true,
+                                    expiryDays: 7,
+                                    expiryDate: expiryDate.toISOString().split('T')[0]
+                                  }));
+                                }
+                              }}
+                              sx={{
+                                color: textPrimary,
+                                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: primaryPurple },
+                              }}
+                            >
+                              <MenuItem value="perishable">Perishable</MenuItem>
+                              <MenuItem value="non-perishable">Non-perishable</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <TextField
+                            label="Quantity"
+                            value={editedValues.quantity || ''}
+                            onChange={(e) => handleEditChange('quantity', e.target.value)}
+                            fullWidth
+                            size="small"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                color: textPrimary,
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                '&:hover fieldset': { borderColor: primaryPurple },
+                              },
+                              '& .MuiInputLabel-root': { color: textSecondary },
+                            }}
+                          />
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <TextField
+                            label="Price"
+                            value={editedValues.price || ''}
+                            onChange={(e) => handleEditChange('price', e.target.value)}
+                            fullWidth
+                            size="small"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                color: textPrimary,
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                '&:hover fieldset': { borderColor: primaryPurple },
+                              },
+                              '& .MuiInputLabel-root': { color: textSecondary },
+                            }}
+                          />
+                        </Grid>
+                        
+                        {/* Only show expiry inputs for perishable items */}
+                        {editedValues.isPerishable !== false && (
+                          <>
+                            <Grid item xs={6}>
+                              <TextField
+                                label="Expiry Days"
+                                type="number"
+                                value={editedValues.expiryDays || ''}
+                                onChange={(e) => handleEditChange('expiryDays', e.target.value)}
+                                fullWidth
+                                size="small"
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    color: textPrimary,
+                                    '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                    '&:hover fieldset': { borderColor: primaryPurple },
+                                  },
+                                  '& .MuiInputLabel-root': { color: textSecondary },
+                                }}
+                              />
+                            </Grid>
+                            
+                            <Grid item xs={12}>
+                              <TextField
+                                label="Expiry Date"
+                                type="date"
+                                value={editedValues.expiryDate || ''}
+                                onChange={handleExpiryDateChange}
+                                fullWidth
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    color: textPrimary,
+                                    '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                    '&:hover fieldset': { borderColor: primaryPurple },
+                                  },
+                                  '& .MuiInputLabel-root': { color: textSecondary },
+                                }}
+                              />
+                            </Grid>
+                          </>
+                        )}
+                      </Grid>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                        <Button
+                          size="small"
+                          onClick={cancelEditing}
+                          sx={{ color: textSecondary, mr: 1 }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          startIcon={<SaveIcon />}
+                          onClick={() => saveEditedItem(index)}
+                          sx={{ bgcolor: primaryPurple }}
+                        >
+                          Save
+                        </Button>
+                      </Box>
+                    </ListItem>
+                  ) : (
+                    // Display mode
+                    <ListItem 
+                      sx={{ 
+                        flexDirection: 'column', 
+                        alignItems: 'flex-start',
+                        px: 1,
+                        py: 1.5,
+                        borderBottom: index < processedResults.items.length - 1 ? 
+                          '1px solid rgba(255,255,255,0.05)' : 'none',
+                        position: 'relative'
+                      }}
+                    >
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        right: 0, 
+                        top: 0,
+                        display: 'flex'
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => startEditing(index)}
+                          sx={{ color: secondaryGreen }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => deleteItem(index)}
+                          sx={{ color: '#ff5656' }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: textPrimary, 
+                          fontWeight: 500,
+                          mb: 0.5,
+                          pr: 6 // Make room for edit buttons
+                        }}
+                      >
+                        {item.name}
+                        {item.category && (
+                          <Typography 
+                            component="span" 
+                            sx={{ 
+                              ml: 1,
+                              color: primaryPurple,
+                              fontSize: '0.7rem',
+                              bgcolor: 'rgba(117,93,255,0.1)',
+                              px: 1,
+                              py: 0.2,
+                              borderRadius: 1
+                            }}
+                          >
+                            {item.category}
+                          </Typography>
+                        )}
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {item.quantity && item.quantity !== 'null' && (
+                          <Typography 
+                            variant="caption" 
+                            sx={{ color: secondaryGreen }}
+                          >
+                            Quantity: {item.quantity}
+                          </Typography>
+                        )}
+                        
+                        {item.price && item.price !== 'null' && (
+                          <Typography 
+                            variant="caption" 
+                            sx={{ color: accentOrange }}
+                          >
+                            Price: ${item.price}
+                          </Typography>
+                        )}
+                      </Box>
+                      
+                      {/* Expiry information - if present display it, if not show a button to add it */}
+                      {item.isPerishable === false ? (
+                        <Box 
+                          sx={{ 
+                            mt: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            px: 1.5,
+                            py: 0.75,
+                            borderRadius: 1.5,
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                          }}
+                        >
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: textSecondary,
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            Non-perishable item
+                          </Typography>
+                        </Box>
+                      ) : item.expiryDays ? (
+                        <Box 
+                          sx={{ 
+                            mt: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            px: 1.5,
+                            py: 0.75,
+                            borderRadius: 1.5,
+                            bgcolor: 'rgba(0,0,0,0.2)',
+                            border: '1px solid',
+                            borderColor: getExpiryColor(item.expiryDays, 'rgba(255,255,255,0.1)')
+                          }}
+                        >
+                          {parseInt(item.expiryDays, 10) <= 3 && (
+                            <WarningIcon 
+                              sx={{ 
+                                fontSize: '0.9rem', 
+                                mr: 0.5, 
+                                color: '#ff5656' 
+                              }} 
+                            />
+                          )}
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: getExpiryColor(item.expiryDays),
+                              fontWeight: parseInt(item.expiryDays, 10) <= 3 ? 'bold' : 'normal'
+                            }}
+                          >
+                            {getExpiryText(item.expiryDays, item.expiryDate)}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Button
+                          variant="text"
+                          size="small"
+                          startIcon={<CalendarTodayIcon fontSize="small" />}
+                          onClick={() => {
+                            // Add default expiry info and then edit
+                            const updatedResults = {
+                              ...processedResults,
+                              items: [...processedResults.items]
+                            };
+                            
+                            // First check if it might be non-perishable based on category
+                            const nonPerishableCategories = ['toiletries', 'household', 'cleaning', 'paper', 'non-food'];
+                            const isLikelyNonPerishable = item.category && 
+                              nonPerishableCategories.some(cat => 
+                                item.category.toLowerCase().includes(cat));
+                            
+                            if (isLikelyNonPerishable) {
+                              // Mark as non-perishable
+                              updatedResults.items[index] = {
+                                ...item,
+                                isPerishable: false
+                              };
+                              
+                              setProcessedResults(updatedResults);
+                              setMessage({
+                                type: 'info',
+                                text: 'Item marked as non-perishable'
+                              });
+                            } else {
+                              // Add default expiry based on category (if present)
+                              let defaultExpiryDays = 7; // Default for unknown
+                              if (item.category) {
+                                switch(item.category.toLowerCase()) {
+                                  case 'dairy': defaultExpiryDays = 7; break;
+                                  case 'meat': defaultExpiryDays = 3; break;
+                                  case 'produce': defaultExpiryDays = 5; break;
+                                  case 'bakery': defaultExpiryDays = 4; break;
+                                  case 'eggs': defaultExpiryDays = 21; break;
+                                  case 'seafood': defaultExpiryDays = 2; break;
+                                  case 'frozen': defaultExpiryDays = 90; break;
+                                  case 'packaged': defaultExpiryDays = 180; break;
+                                  case 'pantry': defaultExpiryDays = 365; break;
+                                  default: defaultExpiryDays = 7;
+                                }
+                              }
+                              
+                              // Calculate expiry date based on purchase date
+                              const purchaseDate = processedResults.date ? new Date(processedResults.date) : new Date();
+                              const expiryDate = new Date(purchaseDate);
+                              expiryDate.setDate(expiryDate.getDate() + defaultExpiryDays);
+                              
+                              // Update the item with expiry info
+                              updatedResults.items[index] = {
+                                ...item,
+                                isPerishable: true,
+                                expiryDays: defaultExpiryDays,
+                                expiryDate: expiryDate.toISOString().split('T')[0]
+                              };
+                              
+                              setProcessedResults(updatedResults);
+                              startEditing(index); // Open in edit mode
+                            }
+                          }}
+                          sx={{
+                            mt: 1,
+                            color: primaryPurple,
+                            textTransform: 'none',
+                            fontSize: '0.7rem',
+                            p: 0,
+                            '&:hover': {
+                              backgroundColor: 'transparent',
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
+                          {item.category && (item.category.toLowerCase().includes('toilet') || 
+                           item.category.toLowerCase().includes('paper') || 
+                           item.category.toLowerCase().includes('cleaning')) ? 
+                            'Mark as non-perishable' : 'Add expiry information'}
+                        </Button>
+                      )}
+                    </ListItem>
+                  )}
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Typography 
+              variant="body2" 
+              sx={{ color: textSecondary, fontStyle: 'italic', mt: 1 }}
+            >
+              No food items were detected in the receipt.
+            </Typography>
+          )}
+          
+          {/* Summary stats for expiry tracking */}
+          {processedResults.items && processedResults.items.length > 0 && (
+            <Box sx={{ mt: 2, p: 1.5, bgcolor: 'rgba(0,0,0,0.2)', borderRadius: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: primaryPurple, mb: 1 }}>
+                Expiry Summary:
+              </Typography>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                <Typography variant="caption" sx={{ color: '#ff5656', mr: 1 }}>
+                  Soon (≤ 3 days): {
+                    processedResults.items.filter(
+                      item => item.expiryDays && parseInt(item.expiryDays, 10) <= 3
+                    ).length
+                  }
+                </Typography>
+                
+                <Typography variant="caption" sx={{ color: accentOrange, mr: 1 }}>
+                  Medium (4-7 days): {
+                    processedResults.items.filter(
+                      item => item.expiryDays && 
+                      parseInt(item.expiryDays, 10) > 3 && 
+                      parseInt(item.expiryDays, 10) <= 7
+                    ).length
+                  }
+                </Typography>
+                <Typography variant="caption" sx={{ color: secondaryGreen, mr: 1 }}>
+                  Long (&gt;7 days): {
+                    processedResults.items.filter(
+                      item => item.expiryDays && parseInt(item.expiryDays, 10) > 7
+                    ).length
+                  }
+                </Typography>
+                
+                <Typography variant="caption" sx={{ color: textSecondary }}>
+                  Non-perishable: {
+                    processedResults.items.filter(
+                      item => item.isPerishable === false
+                    ).length
+                  }
+                </Typography>
+              </Box>
+            </Box>
+          )}
+          
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                console.log('OCR Results:', processedResults);
+                setMessage({
+                  type: 'info',
+                  text: 'Full OCR results logged to console. Press F12 to view.'
+                });
+              }}
+              sx={{ 
+                borderColor: 'rgba(255,255,255,0.2)', 
+                color: textSecondary,
+                textTransform: 'none',
+                fontSize: '0.7rem'
+              }}
+            >
+              Log Full Results to Console
+            </Button>
+            
+            <Button
+              variant="contained"
+              size="small"
+              color="secondary"
+              sx={{ 
+                textTransform: 'none',
+                fontSize: '0.7rem',
+                bgcolor: secondaryGreen,
+                color: cardBg,
+              }}
+            >
+              Save to Dashboard
+            </Button>
+          </Box>
         </Box>
       )}
     </Box>

@@ -88,57 +88,57 @@ const HomePage = () => {
         animate="visible"
         variants={fadeIn}
       >
-        <Box
-          sx={{
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            position: 'relative',
-            overflow: 'hidden',
-            pb: 6,
-            pt: 8,
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
-            borderRadius: { xs: 0, sm: 3 },
-            mb: 6
-          }}
-        >
+      <Box
+        sx={{
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          position: 'relative',
+          overflow: 'hidden',
+          pb: 6,
+          pt: 8,
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: { xs: 0, sm: 3 },
+          mb: 6
+        }}
+      >
           {/* Subtle gradient background */}
-          <Box 
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '100%',
-              opacity: 0.05,
-              background: `radial-gradient(circle at 20% 30%, ${primaryPurple}88 0%, transparent 50%),
+        <Box 
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '100%',
+            opacity: 0.05,
+            background: `radial-gradient(circle at 20% 30%, ${primaryPurple}88 0%, transparent 50%),
                          radial-gradient(circle at 80% 70%, ${secondaryGreen}88 0%, transparent 50%)`,
-              zIndex: 0,
-            }}
-          />
-          
-          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
-            <Box textAlign="center" position="relative">
+            zIndex: 0,
+          }}
+        />
+        
+        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box textAlign="center" position="relative">
               <motion.div variants={fadeInUp}>
                 {/* Title with improved positioning for the underline */}
                 <Box sx={{ display: 'inline-block', position: 'relative' }}>
-                  <Typography 
-                    variant="h1" 
-                    component="h1" 
-                    gutterBottom
-                    sx={{ 
-                      mb: 3,
-                      fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                      background: `linear-gradient(90deg, ${primaryPurple}, ${secondaryGreen})`,
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundSize: '200% 100%',
-                      animation: `${gradientShift} 4s ease infinite`,
-                      paddingBottom: '5px',
-                    }}
-                  >
-                    Never Waste Food Again
-                  </Typography>
+            <Typography 
+              variant="h1" 
+              component="h1" 
+              gutterBottom
+              sx={{ 
+                mb: 3,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                background: `linear-gradient(90deg, ${primaryPurple}, ${secondaryGreen})`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundSize: '200% 100%',
+                animation: `${gradientShift} 4s ease infinite`,
+                paddingBottom: '5px',
+              }}
+            >
+              Never Waste Food Again
+            </Typography>
                   
                   {/* Hand-drawn underline positioned precisely under "Waste" */}
                   <Box 
@@ -176,31 +176,31 @@ const HomePage = () => {
                 variants={fadeInUp}
                 transition={{ delay: 0.1 }}
               >
-                <Typography 
-                  variant="h5" 
-                  component="p"
-                  sx={{ 
-                    mb: 4, 
-                    maxWidth: '700px', 
-                    mx: 'auto', 
-                    color: 'text.secondary',
-                    fontWeight: 400,
-                  }}
-                >
-                  Upload your receipts and we'll track expiry dates of your groceries
-                </Typography>
+            <Typography 
+              variant="h5" 
+              component="p"
+              sx={{ 
+                mb: 4, 
+                maxWidth: '700px', 
+                mx: 'auto', 
+                color: 'text.secondary',
+                fontWeight: 400,
+              }}
+            >
+              Upload your receipts and we'll track expiry dates of your groceries
+            </Typography>
               </motion.div>
 
               <motion.div 
                 variants={fadeInUp}
                 transition={{ delay: 0.2 }}
               >
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: 2,
-                    flexWrap: 'wrap',
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                gap: 2,
+                flexWrap: 'wrap',
                     position: 'relative',
                   }}
                 >
@@ -240,44 +240,44 @@ const HomePage = () => {
                     </motion.svg>
                   </Box>
 
-                  <Button 
-                    variant="contained" 
-                    color="primary"
-                    component={Link}
-                    to="/dashboard"
-                    sx={{ 
-                      px: 3, 
-                      py: 1,
-                      fontWeight: 500,
+              <Button 
+                variant="contained" 
+                color="primary"
+                component={Link}
+                to="/dashboard"
+                sx={{ 
+                  px: 3, 
+                  py: 1,
+                  fontWeight: 500,
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
                       }
-                    }}
-                  >
-                    Go to Dashboard
-                  </Button>
+                }}
+              >
+                Go to Dashboard
+              </Button>
                   
-                  <Button 
-                    variant="outlined"
-                    component={Link}
-                    to="/upload"
-                    sx={{ 
-                      px: 3, 
-                      py: 1,
-                      borderColor: 'rgba(255,255,255,0.1)',
-                      color: 'text.primary',
+              <Button 
+                variant="outlined"
+                component={Link}
+                to="/upload"
+                sx={{ 
+                  px: 3, 
+                  py: 1,
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  color: 'text.primary',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         borderColor: 'rgba(255,255,255,0.2)',
                         backgroundColor: 'rgba(255,255,255,0.03)'
                       }
-                    }}
-                  >
-                    Upload Receipt
-                  </Button>
-                </Box>
+                }}
+              >
+                Upload Receipt
+              </Button>
+            </Box>
               </motion.div>
 
               {/* Stats cards with subtle animations */}
@@ -286,82 +286,82 @@ const HomePage = () => {
                 initial="hidden"
                 animate="visible"
               >
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: 3, 
-                    justifyContent: 'center',
-                    mt: 6,
-                  }}
-                >
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 3, 
+                justifyContent: 'center',
+                mt: 6,
+              }}
+            >
                   <motion.div variants={listItem}>
-                    <Paper 
-                      sx={{ 
-                        py: 2, 
-                        px: 3, 
-                        borderRadius: 3, 
-                        minWidth: '120px',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        bgcolor: 'rgba(255,255,255,0.02)',
+              <Paper 
+                sx={{ 
+                  py: 2, 
+                  px: 3, 
+                  borderRadius: 3, 
+                  minWidth: '120px',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  bgcolor: 'rgba(255,255,255,0.02)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           borderColor: 'rgba(117,93,255,0.2)',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                         }
-                      }}
-                    >
-                      <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>31%</Typography>
-                      <Typography variant="body2" color="text.secondary">Food Waste Reduced</Typography>
-                    </Paper>
+                }}
+              >
+                <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>31%</Typography>
+                <Typography variant="body2" color="text.secondary">Food Waste Reduced</Typography>
+              </Paper>
                   </motion.div>
 
                   <motion.div variants={listItem}>
-                    <Paper 
-                      sx={{ 
-                        py: 2, 
-                        px: 3, 
-                        borderRadius: 3, 
-                        minWidth: '120px',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        bgcolor: 'rgba(255,255,255,0.02)',
+              <Paper 
+                sx={{ 
+                  py: 2, 
+                  px: 3, 
+                  borderRadius: 3, 
+                  minWidth: '120px',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  bgcolor: 'rgba(255,255,255,0.02)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           borderColor: 'rgba(74,234,188,0.2)',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                         }
-                      }}
-                    >
-                      <Typography variant="h5" color="secondary" sx={{ fontWeight: 600 }}>1.2M</Typography>
-                      <Typography variant="body2" color="text.secondary">Items Tracked</Typography>
-                    </Paper>
+                }}
+              >
+                <Typography variant="h5" color="secondary" sx={{ fontWeight: 600 }}>1.2M</Typography>
+                <Typography variant="body2" color="text.secondary">Items Tracked</Typography>
+              </Paper>
                   </motion.div>
 
                   <motion.div variants={listItem}>
-                    <Paper 
-                      sx={{ 
-                        py: 2, 
-                        px: 3, 
-                        borderRadius: 3, 
-                        minWidth: '120px',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        bgcolor: 'rgba(255,255,255,0.02)',
+              <Paper 
+                sx={{ 
+                  py: 2, 
+                  px: 3, 
+                  borderRadius: 3, 
+                  minWidth: '120px',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  bgcolor: 'rgba(255,255,255,0.02)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           borderColor: 'rgba(255,151,87,0.2)',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                         }
-                      }}
-                    >
-                      <Typography variant="h5" color="warning" sx={{ fontWeight: 600 }}>$580</Typography>
-                      <Typography variant="body2" color="text.secondary">Avg. Savings/Year</Typography>
-                    </Paper>
+                }}
+              >
+                <Typography variant="h5" color="warning" sx={{ fontWeight: 600 }}>$580</Typography>
+                <Typography variant="body2" color="text.secondary">Avg. Savings/Year</Typography>
+              </Paper>
                   </motion.div>
                 </Box>
               </motion.div>
-            </Box>
-          </Container>
-        </Box>
+          </Box>
+        </Container>
+      </Box>
       </motion.div>
       
       {/* Features Section with more professional animations */}
@@ -431,172 +431,172 @@ const HomePage = () => {
             </g>
           </motion.svg>
         </Box>
-        <Box sx={{ mb: 8 }}>
+      <Box sx={{ mb: 8 }}>
           <motion.div variants={fadeInUp}>
-            <Typography 
-              variant="h4" 
-              component="h2" 
-              sx={{ 
-                mb: 4.5, 
-                textAlign: 'center',
-                fontWeight: 500,
-              }}
-            >
-              How It Works
-            </Typography>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            mb: 4.5, 
+            textAlign: 'center',
+            fontWeight: 500,
+          }}
+        >
+          How It Works
+        </Typography>
           </motion.div>
-          
+        
           <motion.div
             variants={staggerContainer}
           >
-            <Grid 
-              container 
-              spacing={4}
-            >
-              <Grid item xs={12} md={4}>
+        <Grid 
+          container 
+          spacing={4}
+        >
+          <Grid item xs={12} md={4}>
                 <motion.div variants={listItem}>
-                  <Paper 
-                    sx={{ 
-                      p: 3, 
-                      bgcolor: 'background.paper',
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      borderRadius: 3,
-                      position: 'relative',
-                      overflow: 'hidden',
+            <Paper 
+              sx={{ 
+                p: 3, 
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: 3,
+                position: 'relative',
+                overflow: 'hidden',
                       height: '100%',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         borderColor: `rgba(117,93,255,0.2)`,
                         boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                       }
-                    }}
-                  >
-                    <Box 
-                      sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2,
-                      }}
-                    >
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
                       {/* Icon with subtle transition */}
-                      <Box 
-                        sx={{ 
-                          bgcolor: 'rgba(117,93,255,0.1)',
-                          borderRadius: '50%',
-                          width: 42,
-                          height: 42,
-                          mr: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                <Box 
+                  sx={{ 
+                    bgcolor: 'rgba(117,93,255,0.1)',
+                    borderRadius: '50%',
+                    width: 42,
+                    height: 42,
+                    mr: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                           transition: 'background-color 0.3s ease'
-                        }}
-                      >
-                        <ReceiptLongIcon sx={{ color: primaryPurple, fontSize: 22 }} />
-                      </Box>
-                      <Typography 
-                        variant="h6" 
-                        gutterBottom
-                        sx={{ mb: 0, fontWeight: 500 }}
-                      >
-                        1. Upload Receipt
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Take a photo of your grocery receipts or upload existing images. Our system accepts all major receipt formats.
-                    </Typography>
-                  </Paper>
+                  }}
+                >
+                  <ReceiptLongIcon sx={{ color: primaryPurple, fontSize: 22 }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ mb: 0, fontWeight: 500 }}
+                >
+                  1. Upload Receipt
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Take a photo of your grocery receipts or upload existing images. Our system accepts all major receipt formats.
+              </Typography>
+            </Paper>
                 </motion.div>
-              </Grid>
-              
-              <Grid item xs={12} md={4}>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
                 <motion.div variants={listItem}>
-                  <Paper 
-                    sx={{ 
-                      p: 3, 
-                      bgcolor: 'background.paper',
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      borderRadius: 3,
+            <Paper 
+              sx={{ 
+                p: 3, 
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: 3,
                       height: '100%',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         borderColor: `rgba(74,234,188,0.2)`,
                         boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                       }
-                    }}
-                  >
-                    <Box 
-                      sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2,
-                      }}
-                    >
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
                       {/* Icon with professional appearance */}
-                      <Box 
-                        sx={{ 
-                          bgcolor: 'rgba(74,234,188,0.1)',
-                          borderRadius: '50%',
-                          width: 42,
-                          height: 42,
-                          mr: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                <Box 
+                  sx={{ 
+                    bgcolor: 'rgba(74,234,188,0.1)',
+                    borderRadius: '50%',
+                    width: 42,
+                    height: 42,
+                    mr: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                           transition: 'background-color 0.3s ease'
-                        }}
-                      >
-                        <TrendingUpIcon sx={{ color: secondaryGreen, fontSize: 22 }} />
-                      </Box>
-                      <Typography 
-                        variant="h6" 
-                        gutterBottom
-                        sx={{ mb: 0, fontWeight: 500 }}
-                      >
-                        2. Smart Scanning
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Our system automatically identifies products and looks up typical expiry dates based on purchase date.
-                    </Typography>
-                  </Paper>
+                  }}
+                >
+                  <TrendingUpIcon sx={{ color: secondaryGreen, fontSize: 22 }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ mb: 0, fontWeight: 500 }}
+                >
+                  2. Smart Scanning
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Our system automatically identifies products and looks up typical expiry dates based on purchase date.
+              </Typography>
+            </Paper>
                 </motion.div>
-              </Grid>
-              
-              <Grid item xs={12} md={4}>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
                 <motion.div variants={listItem}>
-                  <Paper 
-                    sx={{ 
-                      p: 3, 
-                      bgcolor: 'background.paper',
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      borderRadius: 3,
+            <Paper 
+              sx={{ 
+                p: 3, 
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: 3,
                       height: '100%',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         borderColor: `rgba(255,151,87,0.2)`,
                         boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                       }
-                    }}
-                  >
-                    <Box 
-                      sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2,
-                      }}
-                    >
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
                       {/* Notification icon with subtle pulse - reinforces expiry reminder theme */}
-                      <Box 
-                        sx={{ 
-                          bgcolor: 'rgba(255,151,87,0.1)',
-                          borderRadius: '50%',
-                          width: 42,
-                          height: 42,
-                          mr: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                <Box 
+                  sx={{ 
+                    bgcolor: 'rgba(255,151,87,0.1)',
+                    borderRadius: '50%',
+                    width: 42,
+                    height: 42,
+                    mr: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                           transition: 'background-color 0.3s ease'
                         }}
                       >
@@ -607,24 +607,24 @@ const HomePage = () => {
                             animation: `${subtlePulse} 2s ease-in-out infinite`
                           }} 
                         />
-                      </Box>
-                      <Typography 
-                        variant="h6" 
-                        gutterBottom
-                        sx={{ mb: 0, fontWeight: 500 }}
-                      >
-                        3. Get Notified
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Receive timely reminders when your food is about to expire so you can use it before it's too late.
-                    </Typography>
-                  </Paper>
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ mb: 0, fontWeight: 500 }}
+                >
+                  3. Get Notified
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Receive timely reminders when your food is about to expire so you can use it before it's too late.
+              </Typography>
+            </Paper>
                 </motion.div>
-              </Grid>
-            </Grid>
+          </Grid>
+        </Grid>
           </motion.div>
-        </Box>
+      </Box>
       </motion.div>
     </Box>
   );
