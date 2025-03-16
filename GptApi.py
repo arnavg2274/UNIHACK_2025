@@ -4,6 +4,8 @@
 import os
 import openai
 from astra_assistants import Client
+from openai.types.beta.vector_stores import VectorStoreFile
+
 
 # load_dotenv("unihackkey.env")  
 # openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -11,23 +13,23 @@ from astra_assistants import Client
 # load_dotenv(dotenv_path="unihackkey.env")  
 # ASTRA_API_TOKEN = os.getenv("ASTRA_API_TOKEN")
 
-# client = Client(
-#     base_url="https://open-assistant-ai.astra.datastax.com/v1",
-#     headers={"astra-api-token": ASTRA_API_TOKEN}
-# )
-
-
-client = OpenAI(
-
-    base_url="https://open-assistant-ai.astra.datastax.com/v1",      
-
-    default_headers={
-
-        "astra-api-token": "AstraCS:jEZmQfbQSCZlIlRDrFrsjPlj:96289192b8ea72bcd777245be280e54c2f72f5bc925db84d5964e703318aa492"
-
-    }
-
+client = Client(
+    base_url="https://open-assistant-ai.astra.datastax.com/v1",
+    headers={"astra-api-token": "AstraCS:jEZmQfbQSCZlIlRDrFrsjPlj:96289192b8ea72bcd777245be280e54c2f72f5bc925db84d5964e703318aa492" }
 )
+
+
+# client = OpenAI(
+
+#     base_url="https://open-assistant-ai.astra.datastax.com/v1",      
+
+#     default_headers={
+
+#         "astra-api-token": "AstraCS:jEZmQfbQSCZlIlRDrFrsjPlj:96289192b8ea72bcd777245be280e54c2f72f5bc925db84d5964e703318aa492"
+
+#     }
+
+# )
 
 
 def get_item_expiry(item_name):
