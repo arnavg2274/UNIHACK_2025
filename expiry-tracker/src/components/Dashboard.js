@@ -120,7 +120,7 @@ const realDonationService = {
       `location=${latitude},${longitude}&radius=${radius}&` +
       `type=food_bank|charity|community_center&` +
       `keyword=food%20bank%20OR%20shelter%20OR%20donation&` +
-      `key=YOUR_API_KEY`
+      `key=AIzaSyCbXIm0ncsxbDWD0oCH4m2rmdTOYXiSVXE`
     );
     const data = await response.json();
     
@@ -308,7 +308,7 @@ const Dashboard = () => {
   const geocodeZipCode = async (zipCode) => {
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?` +
-      `address=${zipCode}&key=YOUR_API_KEY`
+      `address=${zipCode}&key=AIzaSyCbXIm0ncsxbDWD0oCH4m2rmdTOYXiSVXE`
     );
     const data = await response.json();
     
